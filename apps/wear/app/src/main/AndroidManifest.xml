@@ -21,6 +21,19 @@
             android:name="com.google.android.wearable.standalone"
             android:value="true" />
 
+        <service
+            android:name=".PriceTileService"
+            android:exported="true"
+            android:label="@string/tile_label"
+            android:permission="com.google.android.wearable.permission.BIND_TILE_PROVIDER">
+            <intent-filter>
+                <action android:name="androidx.wear.tiles.action.BIND_TILE_PROVIDER" />
+            </intent-filter>
+            <meta-data
+                android:name="androidx.wear.tiles.PREVIEW"
+                android:resource="@drawable/ic_launcher" />
+        </service>
+
         <activity
             android:name=".MainActivity"
             android:exported="true"

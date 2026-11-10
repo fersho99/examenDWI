@@ -22,6 +22,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -33,6 +34,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.wear.compose.material3.MaterialTheme
 import androidx.wear.compose.material3.Text
+import androidx.wear.tiles.TileService
 import kotlinx.coroutines.delay
 
 private val Cream = Color(0xFFF6F0E6)
@@ -64,12 +66,19 @@ class MainActivity : ComponentActivity() {
 private fun PriceScreen() {
     var state by remember { mutableStateOf<UiState>(UiState.Loading) }
     val lifecycle = LocalLifecycleOwner.current.lifecycle
+    val context = LocalContext.current
 
     LaunchedEffect(lifecycle) {
         lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
             while (true) {
                 state = try {
-                    UiState.Loaded(PricesApi.fetch().data.prices, offline = false)
+                    val prices = PricesApi.fetch().data.prices
+                    // El tile muestra lo mismo que la app sin esperar su siguiente ciclo.
+                    prices.firstOrNull()?.let { primary ->
+                        LastPrice.save(context, primary)
+                        TileService.getUpdater(context).requestUpdate(PriceTileService::class.java)
+                    }
+                    UiState.Loaded(prices, offline = false)
                 } catch (error: Exception) {
                     when (val current = state) {
                         // Se conserva lo último recibido y se avisa que no se pudo actualizar.

@@ -63,6 +63,9 @@ dependencies {
     implementation("androidx.wear.compose:compose-foundation:1.5.6")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.11.0")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.12.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-guava:1.11.0")
+    implementation("androidx.wear.tiles:tiles:1.5.0")
+    implementation("androidx.wear.protolayout:protolayout:1.3.0")
 
     testImplementation("junit:junit:4.13.2")
 }
