@@ -8,18 +8,19 @@ if (existsSync(envFile)) process.loadEnvFile(envFile);
 
 /**
  * La app carga la web desplegada (decisión 1 del plan).
- * dev:  http://localhost:3000/app con `adb reverse tcp:3000 tcp:3000`.
- * prod: CAP_SERVER_URL, por ejemplo https://bloque21.vercel.app/app.
+ * dev:  http://localhost:3000/app, que llega al teléfono con `adb reverse tcp:3000 tcp:3000`.
+ * prod: BLOQUE21_URL + /app, por ejemplo https://bloque21.vercel.app/app.
  */
-const mode = process.env.CAP_ENV === "dev" ? "dev" : "prod";
-const url = mode === "dev" ? (process.env.CAP_DEV_URL ?? "http://localhost:3000/app") : process.env.CAP_SERVER_URL;
+const mode = process.env.BLOQUE21_ENV === "dev" ? "dev" : "prod";
+const origin = mode === "dev" ? "http://localhost:3000" : process.env.BLOQUE21_URL?.replace(/\/+$/, "");
 
-if (!url) {
-  throw new Error("Falta CAP_SERVER_URL en .env.local (o usa CAP_ENV=dev para el servidor local).");
+if (!origin) {
+  throw new Error("Falta BLOQUE21_URL en .env.local (o usa BLOQUE21_ENV=dev para el servidor local).");
 }
-if (mode === "prod" && !url.startsWith("https://")) {
-  throw new Error("CAP_SERVER_URL debe usar https en modo prod.");
+if (mode === "prod" && !origin.startsWith("https://")) {
+  throw new Error("BLOQUE21_URL debe usar https en modo prod.");
 }
+const url = `${origin}/app`;
 
 const config: CapacitorConfig = {
   appId: "mx.bloque21.app",

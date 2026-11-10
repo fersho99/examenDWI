@@ -1,52 +1,63 @@
 # Bloque 21
 
-Sitio web sobre Bitcoin con precio en vivo, gráfica histórica, métricas de mercado,
-índice de miedo y codicia, y conversor a MXN, USD y EUR.
+Precios de criptomonedas en la web, una app Android y una app para Galaxy Watch 8. El plan completo está en [docs/PLAN.md](docs/PLAN.md).
 
-Construido con Next.js (App Router), TypeScript y Tailwind CSS.
+| Carpeta | Contenido |
+|---|---|
+| `apps/web` | Next.js: sitio, API `/api/v1`, ingesta de velas a Neon |
+| `apps/android` | Capacitor: carga la web desplegada |
+| `apps/wear` | Kotlin + Compose for Wear OS |
+| `packages/shared` | Esquemas Zod, formato de precios, monedas iniciales y fixtures |
 
-## Cómo ejecutarlo
+## Puesta en marcha
+
+1. Instala dependencias:
+
+   ```bash
+   npm install
+   ```
+
+2. Copia `.env.example` como `.env.local` y llena `DATABASE_URL`, `DATABASE_URL_UNPOOLED` y `CRON_SECRET`.
+3. Crea las tablas, registra las monedas y trae las primeras velas:
+
+   ```bash
+   npm run db:migrate
+   ```
+
+   ```bash
+   npm run db:seed
+   ```
+
+   ```bash
+   npm run ingest
+   ```
+
+4. Levanta el servidor y abre <http://localhost:3000/app>:
+
+   ```bash
+   npm run dev
+   ```
+
+Android y reloj: [docs/ANDROID.md](docs/ANDROID.md).
+
+## Calidad
 
 ```bash
-npm install
-npm run dev
+npm run check
 ```
 
-Abre <http://localhost:3000>.
+Corre tipos, lint, pruebas (incluida una de integración con Postgres en memoria) y el build de producción.
 
-## Acceso de demostración
+## Ingesta
 
-El login es **simulado**: no usa base de datos ni un servicio de autenticación. Las
-credenciales están fijas en `src/lib/session.ts` y también se muestran en `/login`.
-
-| Campo      | Valor                |
-| ---------- | -------------------- |
-| Correo     | `demo@bloque21.test` |
-| Contraseña | `satoshi21`          |
-
-Al entrar se guarda una cookie de sesión de demostración, y `src/proxy.ts` protege la
-ruta `/dashboard`.
+`/api/internal/ingest` guarda velas de 5 min, 1 h y 1 día de Binance en Neon. Acepta `GET` o `POST` con `Authorization: Bearer CRON_SECRET`. En Vercel Hobby el cron propio solo corre una vez al día, así que la llama un programador externo cada 15 min.
 
 ## Fuentes de datos
 
-Ninguna requiere clave de acceso.
+- [Binance Market Data](https://developers.binance.com/docs/binance-spot-api-docs/faqs/market_data_only): precios y velas, par contra USDT.
+- [CoinGecko](https://docs.coingecko.com/docs/keyless-public-api): capitalización, suministro, ATH y tipos de cambio en el sitio actual.
+- [Alternative.me](https://alternative.me/crypto/fear-and-greed-index/): índice de miedo y codicia.
 
-- [Binance Market Data](https://developers.binance.com/docs/binance-spot-api-docs/faqs/market_data_only):
-  precio en vivo, variación de 24 horas e historial de la gráfica (par BTC/USDT).
-- [CoinGecko](https://docs.coingecko.com/docs/keyless-public-api): capitalización,
-  volumen global, suministro, máximo histórico y tipos de cambio.
-- [Alternative.me](https://alternative.me/crypto/fear-and-greed-index/): índice de miedo
-  y codicia.
+## Sitio anterior
 
-La API pública de CoinGecko limita las consultas por IP, así que sus datos se guardan en
-caché varios minutos. Si una fuente falla, se conserva el último dato conocido y la
-página sigue funcionando con lo disponible.
-
-## Scripts
-
-| Comando         | Descripción                  |
-| --------------- | ---------------------------- |
-| `npm run dev`   | Servidor de desarrollo       |
-| `npm run build` | Compilación para producción  |
-| `npm run start` | Servidor de producción       |
-| `npm run lint`  | Revisión de código con ESLint |
+`/`, `/login` y `/dashboard` siguen siendo el sitio de Bitcoin con login **simulado** (usuario `demo@bloque21.test`, contraseña `satoshi21`). Se reemplazan en los hitos 2 a 4 del plan.
