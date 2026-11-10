@@ -47,7 +47,8 @@ export async function notify(title: string, body: string): Promise<boolean> {
   if (native) {
     const { display } = await native.plugin.checkPermissions();
     if (display !== "granted") return false;
-    await native.plugin.schedule({ notifications: [{ id: nextId++, title, body }] });
+    // Aviso inmediato: sin alarma exacta, así Android no pide el permiso de "Alarmas y recordatorios".
+    await native.plugin.schedule({ notifications: [{ id: nextId++, title, body, isExactNotification: false }] });
     return true;
   }
   if (browserPermission() !== "granted") return false;
