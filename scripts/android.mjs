@@ -76,12 +76,14 @@ function apiOrigin() {
 
 function build(name) {
   const project = projects[name];
-  console.log(`Compilando ${name === "phone" ? "teléfono" : "reloj"} en modo ${mode} contra ${apiOrigin()}`);
   if (name === "phone") {
+    console.log(`Compilando teléfono en modo ${mode} contra ${apiOrigin()}`);
     run("npx", ["cap", "sync", "android"], { cwd: join(root, "apps/android") });
     gradle(project, ["assembleDebug"]);
   } else {
-    gradle(project, ["assembleDebug", `-Pbloque21.apiBaseUrl=${apiOrigin()}`]);
+    // El reloj lee Binance directo: no necesita servidor ni URL.
+    console.log("Compilando reloj");
+    gradle(project, ["assembleDebug"]);
   }
   console.log(`\n✓ APK: ${project.apk}`);
 }
@@ -90,8 +92,8 @@ function install(name) {
   const project = projects[name];
   build(name);
   adb(project, ["install", "-r", project.apk]);
-  // En dev el dispositivo alcanza tu servidor local como localhost:3000.
-  if (mode === "dev") adb(project, ["reverse", "tcp:3000", "tcp:3000"]);
+  // En dev el teléfono alcanza tu servidor local como localhost:3000; el reloj no lo necesita.
+  if (mode === "dev" && name === "phone") adb(project, ["reverse", "tcp:3000", "tcp:3000"]);
   console.log("\n✓ Instalada. Abre Bloque 21 en el dispositivo.");
 }
 

@@ -8,7 +8,7 @@ Solo APK de depuración, instaladas con `adb install -r` (conserva los datos al 
 | `applicationId` | `mx.bloque21.app` | `mx.bloque21.app` (debe ser idéntico para vincularlos) |
 | `versionName` | `0.1.0` | `0.1.0` |
 | `versionCode` | Minutos desde el 1 de enero de 2026: sube solo en cada compilación | Igual |
-| Qué contiene | El envoltorio nativo, la página local sin conexión y la URL del servidor. La web vive en Vercel: cambiar la web **no** requiere reinstalar | La app completa; llama directo a la API |
+| Qué contiene | El envoltorio nativo, la página local sin conexión y la URL del servidor. Cambiar la web **no** requiere reinstalar | La app completa. Lee Binance directo por su propia conexión: no necesita la PC ni servidor |
 
 ## Lo que necesitas en Windows
 
@@ -112,3 +112,18 @@ Las APK quedan en:
 | El reloj dice "Sin conexión" | El reloj no tiene red, o en dev falta `adb reverse` hacia el reloj |
 | `more than one device/emulator` | Define `ADB_PHONE` y `ADB_WATCH` en `.env.local` |
 | Gradle falla con "Unsupported class file major version" | Se usó un JDK que no es 21. Define `BLOQUE21_JAVA_HOME` |
+
+## Qué hace el reloj
+
+- **Lista:** tu moneda principal arriba y las otras 9 con precio y variación de 24 h. Abajo, cambiar entre pesos y dólares, y ver las alertas.
+- **Detalle:** precio, variación, gráfica de las últimas 24 h, rango del día y antigüedad del dato.
+- **Principal:** en el detalle, el interruptor "Principal" elige la moneda del tile y de la carátula.
+- **Alertas del reloj:** en el detalle, cada toque en "Alerta" cambia el umbral: ±2, ±3, ±5, ±10 % y apagada. El reloj las revisa cada 15 min aunque la app esté cerrada y vibra dos veces.
+- **Tile:** precio de la moneda principal, variación, rango del día y antigüedad.
+- **Complication:** mantén presionada la carátula > Personalizar > elige un espacio > Bloque 21 "Precio de cripto".
+
+Para poner el tile en el carrusel desde la PC:
+
+```bash
+adb -s IP:PUERTO shell am broadcast -a com.google.android.wearable.app.DEBUG_SURFACE --es operation add-tile --ecn component mx.bloque21.app/.PriceTileService
+```
