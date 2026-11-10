@@ -1,6 +1,20 @@
 # Bloque 21: plan de producto multi-cripto (web, Android y Galaxy Watch 8)
 
-Estado: propuesta, pendiente de tu aprobación. Fecha de verificación de límites y fuentes: 5 de noviembre de 2026.
+Estado: aprobado el 10 de noviembre de 2026. Fecha de verificación de límites y fuentes: 5 de noviembre de 2026.
+
+## Alcance de la entrega del 10 de noviembre de 2026
+
+Respuestas a las preguntas abiertas: la app es solo para ti y para mostrar la práctica, sin IA por ahora, sin pagar nada, reloj Bluetooth/Wi-Fi (sin LTE), teléfono Galaxy S25 Ultra, fecha límite el mismo día.
+
+| Entra hoy | Queda para después |
+|---|---|
+| Hito 1 completo: web, Neon, teléfono y reloj con precios reales | IA: señales, resumen y chat (hitos 8 y 9) |
+| Watchlist de 10 monedas y detalle con gráfica en el teléfono | Portafolio (hito 5) |
+| Tile de precio en el reloj | Alertas y FCM (hito 6) |
+| Respaldo a Binance directo si Neon no responde | Vinculación por Data Layer y token del reloj (hito 2) |
+| Login real con Better Auth si Neon está listo | Sistema de diseño completo y animaciones (hito 4) |
+
+Todo con servicios gratuitos: Neon Free, Vercel Hobby y un programador externo gratuito. Sin LTE, el reloj sin teléfono solo tiene red por Wi-Fi.
 
 ## Lo que corrijo de tu propuesta
 

@@ -38,9 +38,29 @@ export type Price = z.infer<typeof PriceSchema>;
 
 export const PricesResponseSchema = z.object({
   data: z.object({ prices: z.array(PriceSchema) }),
-  meta: z.object({ generatedAt: isoDate }),
+  meta: z.object({
+    generatedAt: isoDate,
+    /** database: velas guardadas en Neon. live: Neon no respondió y se leyó Binance directo. */
+    servedFrom: z.enum(["database", "live"]),
+  }),
 });
 export type PricesResponse = z.infer<typeof PricesResponseSchema>;
+
+/** Rangos de la gráfica en días, como en el sitio actual. */
+export const CHART_DAYS = ["1", "7", "30", "90", "365"] as const;
+export const ChartDaysSchema = z.enum(CHART_DAYS);
+export type ChartDays = (typeof CHART_DAYS)[number];
+
+export const ChartResponseSchema = z.object({
+  data: z.object({
+    coinId: z.string(),
+    days: ChartDaysSchema,
+    /** Pares [marca de tiempo en ms, precio de cierre en USD], del más viejo al más nuevo. */
+    points: z.array(z.tuple([z.number().int(), z.number().positive()])),
+  }),
+  meta: z.object({ generatedAt: isoDate, servedFrom: z.enum(["database", "live"]) }),
+});
+export type ChartResponse = z.infer<typeof ChartResponseSchema>;
 
 /** Ids de CoinGecko: minúsculas, números y guiones. */
 export const CoinIdSchema = z.string().regex(/^[a-z0-9-]{1,64}$/);

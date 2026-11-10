@@ -24,7 +24,7 @@ data class Price(
 data class PricesData(val prices: List<Price>)
 
 @Serializable
-data class PricesMeta(val generatedAt: String)
+data class PricesMeta(val generatedAt: String, val servedFrom: String = "database")
 
 @Serializable
 data class PricesResponse(val data: PricesData, val meta: PricesMeta)

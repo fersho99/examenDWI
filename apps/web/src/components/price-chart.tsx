@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { formatAxisDate, formatDateTime, formatUsd } from "@/lib/format";
+import { formatPriceUsd } from "@bloque21/shared";
+import { formatAxisDate, formatDateTime } from "@/lib/format";
 import type { ChartPoint, ChartRange } from "@/lib/types";
 
 const MARGIN = { top: 12, right: 72, bottom: 30, left: 2 };
@@ -36,10 +37,16 @@ export function PriceChart({
   points,
   range,
   busy,
+  label = "Bitcoin",
+  tint = "var(--color-btc)",
 }: {
   points: ChartPoint[];
   range: ChartRange;
   busy: boolean;
+  /** Nombre de la moneda para el texto accesible. */
+  label?: string;
+  /** Tinta de la moneda para la línea y el punto. */
+  tint?: string;
 }) {
   const box = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(960);
@@ -122,7 +129,7 @@ export function PriceChart({
   const last = points[points.length - 1];
 
   const first = points[0][1];
-  const description = `Precio de Bitcoin en dólares. Inicia en ${formatUsd(first)} y termina en ${formatUsd(last[1])}. Usa las flechas para recorrer los puntos.`;
+  const description = `Precio de ${label} en dólares. Inicia en ${formatPriceUsd(first)} y termina en ${formatPriceUsd(last[1])}. Usa las flechas para recorrer los puntos.`;
 
   return (
     <div>
@@ -157,8 +164,8 @@ export function PriceChart({
         <svg width={width} height={height} aria-hidden className="block">
           <defs>
             <linearGradient id="price-wash" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="var(--color-btc-deep)" stopOpacity={0.16} />
-              <stop offset="100%" stopColor="var(--color-btc-deep)" stopOpacity={0} />
+              <stop offset="0%" stopColor={tint} stopOpacity={0.16} />
+              <stop offset="100%" stopColor={tint} stopOpacity={0} />
             </linearGradient>
           </defs>
 
@@ -177,7 +184,7 @@ export function PriceChart({
                 textAnchor="end"
                 className="fill-dust text-xs tabular-nums"
               >
-                {formatUsd(tick.price)}
+                {formatPriceUsd(tick.price)}
               </text>
             </g>
           ))}
@@ -199,7 +206,7 @@ export function PriceChart({
             <path
               d={chart.line}
               fill="none"
-              stroke="var(--color-btc-deep)"
+              stroke={tint}
               strokeWidth={2}
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -209,7 +216,7 @@ export function PriceChart({
                 cx={chart.x(last[0])}
                 cy={chart.y(last[1])}
                 r={5}
-                fill="var(--color-btc)"
+                fill={tint}
                 stroke="var(--color-ink)"
                 strokeWidth={2}
               />
@@ -229,7 +236,7 @@ export function PriceChart({
                 cx={chart.x(activePoint[0])}
                 cy={chart.y(activePoint[1])}
                 r={5}
-                fill="var(--color-btc)"
+                fill={tint}
                 stroke="var(--color-ink)"
                 strokeWidth={2}
               />
@@ -247,7 +254,7 @@ export function PriceChart({
               ),
             }}
           >
-            <p className="font-semibold">{formatUsd(activePoint[1])}</p>
+            <p className="font-semibold">{formatPriceUsd(activePoint[1])}</p>
             <p className="text-xs text-sand">{formatDateTime(activePoint[0])}</p>
           </div>
         )}
@@ -269,7 +276,7 @@ export function PriceChart({
               {rows.map(([time, price]) => (
                 <tr key={time}>
                   <td className="px-4 py-2 text-sand">{formatDateTime(time)}</td>
-                  <td className="px-4 py-2 text-right">{formatUsd(price)}</td>
+                  <td className="px-4 py-2 text-right">{formatPriceUsd(price)}</td>
                 </tr>
               ))}
             </tbody>

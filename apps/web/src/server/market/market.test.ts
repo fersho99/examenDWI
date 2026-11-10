@@ -3,7 +3,8 @@ import { hasBearerSecret } from "../http";
 import { klinesToRequest } from "./ingest";
 import { change24h, priceAsOf } from "./prices";
 import { SourceError } from "./source-error";
-import { fetchKlines, parseKlines } from "./sources/binance";
+import { downsample } from "./chart-service";
+import { fetchKlines, parseKlines, parseTickers } from "./sources/binance";
 
 // Recorte real de /api/v3/klines?symbol=BTCUSDT&interval=5m (12 campos por vela).
 const KLINES = [
@@ -45,6 +46,26 @@ describe("Binance", () => {
     }) as unknown as typeof fetch;
     await fetchKlines("BTCUSDT", "5m", 5000, fake);
     expect(requested).toBe("1000");
+  });
+});
+
+describe("respaldo en vivo y gráfica", () => {
+  it("lee el ticker de 24 h de Binance", () => {
+    const [ticker] = parseTickers([
+      { symbol: "DOGEUSDT", lastPrice: "0.06741", priceChangePercent: "-4.840", closeTime: 1762797600000, extra: 1 },
+    ]);
+    expect(ticker).toEqual({
+      symbol: "DOGEUSDT",
+      lastPrice: 0.06741,
+      change24hPct: -4.84,
+      closeTime: new Date(1762797600000),
+    });
+  });
+
+  it("reduce puntos conservando siempre el último", () => {
+    const points = Array.from({ length: 10 }, (_, i): [number, number] => [i, i]);
+    expect(downsample(points, 4).map(([t]) => t)).toEqual([1, 5, 9]);
+    expect(downsample(points, 1)).toHaveLength(10);
   });
 });
 

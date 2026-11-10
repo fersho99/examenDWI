@@ -1,9 +1,7 @@
 import { PricesQuerySchema, PricesResponseSchema } from "@bloque21/shared";
 import { connection, type NextRequest } from "next/server";
-import { getDb } from "@/server/db/client";
-import { env } from "@/server/env";
 import { apiError } from "@/server/http";
-import { getLatestPrices } from "@/server/market/prices";
+import { loadPrices } from "@/server/market/price-service";
 
 export async function GET(request: NextRequest) {
   await connection();
@@ -15,23 +13,23 @@ export async function GET(request: NextRequest) {
     return apiError("invalid_input", "La lista de monedas no es válida: usa ids separados por comas, máximo 25.");
   }
 
-  let prices;
+  let result;
   try {
-    prices = await getLatestPrices(getDb(env("DATABASE_URL")), query.data.ids);
+    result = await loadPrices(query.data.ids);
   } catch (error) {
-    console.error("prices: fallo al leer Neon", error);
-    return apiError("source_unavailable", "No pudimos leer los precios guardados. Intenta en un momento.", {
+    console.error("prices: ni Neon ni Binance respondieron", error);
+    return apiError("source_unavailable", "No pudimos leer precios en este momento. Intenta en un minuto.", {
       retryAfter: 30,
     });
   }
 
-  if (prices.length === 0) {
-    return apiError("not_found", "Todavía no hay precios guardados para esas monedas.");
+  if (result.prices.length === 0) {
+    return apiError("not_found", "No hay precios para esas monedas.");
   }
 
   const body = PricesResponseSchema.parse({
-    data: { prices },
-    meta: { generatedAt: new Date().toISOString() },
+    data: { prices: result.prices },
+    meta: { generatedAt: new Date().toISOString(), servedFrom: result.servedFrom },
   });
 
   return Response.json(body, {

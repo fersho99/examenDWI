@@ -1,8 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { connection } from "next/server";
 import { Suspense } from "react";
-import { getDb } from "@/server/db/client";
-import { getLatestPrices } from "@/server/market/prices";
+import { loadPrices } from "@/server/market/price-service";
 import { LivePrices } from "./live-prices";
 
 export const metadata: Metadata = { title: "Precios" };
@@ -25,9 +24,9 @@ export default function AppHome() {
 
 async function InitialPrices() {
   await connection();
-  const prices = await getLatestPrices(getDb()).catch((error: unknown) => {
+  const { prices } = await loadPrices().catch((error: unknown) => {
     console.error("app: no se pudieron leer los precios", error);
-    return [];
+    return { prices: [] };
   });
   return <LivePrices initial={prices} />;
 }
