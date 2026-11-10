@@ -13,6 +13,7 @@ import { PriceChart } from "@/components/price-chart";
 import { RangeControl } from "@/components/range-control";
 import { CHART_RANGES, type ChartPoint } from "@/lib/types";
 import { Freshness } from "../freshness";
+import { CurrencySwitch, useMarket } from "../market-context";
 
 const REFRESH_MS = 30_000;
 
@@ -34,6 +35,7 @@ export function CoinDetail({
   initialDays: ChartDays;
   initialPoints: ChartPoint[];
 }) {
+  const market = useMarket();
   const [price, setPrice] = useState(initialPrice);
   const [selected, setSelected] = useState<ChartDays>(initialDays);
   const [shown, setShown] = useState({ days: initialDays, points: initialPoints });
@@ -108,13 +110,16 @@ export function CoinDetail({
   return (
     <div className="mt-2 space-y-6">
       <section aria-labelledby="coin-name" className="rise">
-        <h1 id="coin-name" className="text-lg text-sand">
-          {coin.name} <span className="text-dust">{coin.symbol}</span>
-        </h1>
+        <div className="flex items-center justify-between gap-4">
+          <h1 id="coin-name" className="text-lg text-sand">
+            {coin.name} <span className="text-dust">{coin.symbol}</span>
+          </h1>
+          <CurrencySwitch />
+        </div>
         {price ? (
           <>
             <p className="mt-1 font-display text-5xl font-semibold tracking-tight tabular-nums">
-              {formatPriceUsd(price.priceUsd)}
+              {market.money(price.priceUsd)}
             </p>
             <p className="mt-2 flex flex-wrap items-baseline gap-x-3 text-sm">
               {price.change24hPct !== null && (
@@ -158,7 +163,7 @@ export function CoinDetail({
       )}
 
       <PriceChart points={shown.points} range={shown.days} busy={busy} label={coin.name} tint={coin.tint} />
-      <p className="text-sm text-dust">Velas de Binance, par {coin.symbol}/USDT.</p>
+      <p className="text-sm text-dust">Gráfica en dólares, con velas de Binance del par {coin.symbol}/USDT.</p>
     </div>
   );
 }

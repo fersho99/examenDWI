@@ -62,6 +62,17 @@ export const ChartResponseSchema = z.object({
 });
 export type ChartResponse = z.infer<typeof ChartResponseSchema>;
 
+export const FxResponseSchema = z.object({
+  data: z.object({
+    /** Pesos por dólar, del par USDT/MXN de Binance. */
+    usdMxn: z.number().positive(),
+    asOf: isoDate,
+    source: z.literal("binance"),
+  }),
+  meta: z.object({ generatedAt: isoDate }),
+});
+export type FxResponse = z.infer<typeof FxResponseSchema>;
+
 /** Ids de CoinGecko: minúsculas, números y guiones. */
 export const CoinIdSchema = z.string().regex(/^[a-z0-9-]{1,64}$/);
 

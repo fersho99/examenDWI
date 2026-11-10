@@ -1,4 +1,4 @@
-import type { Metadata, Viewport } from "next";
+import type { Metadata } from "next";
 import { connection } from "next/server";
 import { Suspense } from "react";
 import { loadPrices } from "@/server/market/price-service";
@@ -8,12 +8,7 @@ import { LivePrices } from "./live-prices";
 
 export const metadata: Metadata = { title: "Precios" };
 
-export const viewport: Viewport = {
-  themeColor: "#14110d",
-  viewportFit: "cover",
-};
-
-/** Pantalla que carga la app de Android. Por ahora muestra precios reales leídos de Neon. */
+/** Pantalla inicial de la app de Android: precios reales de Neon, o de Binance si Neon no responde. */
 export default function AppHome() {
   return (
     <main className="safe-area mx-auto w-full max-w-xl flex-1 px-4">

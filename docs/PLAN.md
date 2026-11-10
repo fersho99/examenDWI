@@ -9,10 +9,13 @@ Respuestas a las preguntas abiertas: la app es solo para ti y para mostrar la pr
 | Entra hoy | Queda para después |
 |---|---|
 | Hito 1 completo: web, Neon, teléfono y reloj con precios reales | IA: señales, resumen y chat (hitos 8 y 9) |
-| Watchlist de 10 monedas y detalle con gráfica en el teléfono | Portafolio (hito 5) |
-| Tile de precio en el reloj | Alertas y FCM (hito 6) |
+| Watchlist de 10 monedas y detalle con gráfica en el teléfono | Portafolio y alertas guardados en Neon por usuario |
+| Tile de precio en el reloj | Alertas revisadas en servidor con la app cerrada (FCM, hito 6) |
 | Respaldo a Binance directo si Neon no responde | Vinculación por Data Layer y token del reloj (hito 2) |
 | Login real con Better Auth si Neon está listo | Sistema de diseño completo y animaciones (hito 4) |
+| Portafolio con costo promedio y ganancia en MXN y USD, guardado en el teléfono | |
+| Alertas de precio y variación revisadas cada 30 s con la app abierta; notificación nativa que el reloj replica y vibra | |
+| Precios en MXN (USDT/MXN de Binance) y conversor | |
 
 Todo con servicios gratuitos: Neon Free, Vercel Hobby y un programador externo gratuito. Sin LTE, el reloj sin teléfono solo tiene red por Wi-Fi.
 

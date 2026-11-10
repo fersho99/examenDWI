@@ -81,6 +81,13 @@ export async function fetchTickers(symbols: string[], fetcher: typeof fetch = fe
   return parseTickers(await response.json());
 }
 
+/** Pesos por dólar con el par USDT/MXN (USDT sigue al dólar). */
+export async function fetchUsdMxn(fetcher: typeof fetch = fetch): Promise<{ rate: number; asOf: Date }> {
+  const [ticker] = await fetchTickers(["USDTMXN"], fetcher);
+  if (!ticker) throw new SourceError("binance", "Binance no devolvió USDT/MXN");
+  return { rate: ticker.lastPrice, asOf: new Date(Math.min(ticker.closeTime.getTime(), Date.now())) };
+}
+
 /** Intervalos de Binance que usa la app: los guardados más los agregados de la gráfica en vivo. */
 export type BinanceInterval = CandleInterval | "4h" | "12h";
 

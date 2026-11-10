@@ -3,10 +3,11 @@
 @theme {
   --color-ink: #14110d;
   --color-panel: #1c1813;
+  --color-ink-3: #26201a;
   --color-line: #2e271e;
   --color-cream: #f6f0e6;
   --color-sand: #bdb3a2;
-  --color-dust: #9a9080;
+  --color-dust: #a89e8d;
   --color-btc: #f7931a;
   --color-btc-deep: #dc7708;
   --color-up: #4fd8a5;
@@ -34,6 +35,11 @@ body {
 .safe-area {
   padding-top: max(2rem, env(safe-area-inset-top));
   padding-bottom: max(3rem, env(safe-area-inset-bottom));
+}
+
+/* Deja libre el espacio de la barra inferior de la app */
+.has-nav .safe-area {
+  padding-bottom: calc(6rem + env(safe-area-inset-bottom));
 }
 
 :focus-visible {
