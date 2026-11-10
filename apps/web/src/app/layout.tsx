@@ -31,6 +31,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html
       lang="es"
       data-scroll-behavior="smooth"
+      // Capacitor agrega las variables --safe-area-inset-* en <html> antes de hidratar.
+      suppressHydrationWarning
       className={`${heading.variable} ${body.variable} ${code.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col font-sans">{children}</body>

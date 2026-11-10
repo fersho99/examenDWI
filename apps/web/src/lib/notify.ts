@@ -2,11 +2,19 @@
 
 export type NotifyPermission = "granted" | "denied" | "prompt" | "unsupported";
 
-async function native() {
+/**
+ * El plugin siempre viaja dentro de un objeto: los plugins de Capacitor son un proxy y, si una
+ * promesa los devuelve sueltos, JavaScript intenta llamar a su .then() y falla en Android.
+ */
+async function nativePlugin() {
   const { Capacitor } = await import("@capacitor/core");
   if (!Capacitor.isNativePlatform()) return null;
   const { LocalNotifications } = await import("@capacitor/local-notifications");
-  return LocalNotifications;
+  return { plugin: LocalNotifications };
+}
+
+function fromDisplay(display: string): NotifyPermission {
+  return display === "granted" ? "granted" : display === "denied" ? "denied" : "prompt";
 }
 
 function browserPermission(): NotifyPermission {
@@ -15,20 +23,14 @@ function browserPermission(): NotifyPermission {
 }
 
 export async function getNotifyPermission(): Promise<NotifyPermission> {
-  const plugin = await native();
-  if (plugin) {
-    const { display } = await plugin.checkPermissions();
-    return display === "granted" ? "granted" : display === "denied" ? "denied" : "prompt";
-  }
+  const native = await nativePlugin();
+  if (native) return fromDisplay((await native.plugin.checkPermissions()).display);
   return browserPermission();
 }
 
 export async function requestNotifyPermission(): Promise<NotifyPermission> {
-  const plugin = await native();
-  if (plugin) {
-    const { display } = await plugin.requestPermissions();
-    return display === "granted" ? "granted" : display === "denied" ? "denied" : "prompt";
-  }
+  const native = await nativePlugin();
+  if (native) return fromDisplay((await native.plugin.requestPermissions()).display);
   if (typeof Notification === "undefined") return "unsupported";
   const result = await Notification.requestPermission();
   return result === "default" ? "prompt" : result;
@@ -41,11 +43,11 @@ let nextId = Math.floor(Date.now() / 1000) % 1_000_000;
  * Devuelve false si no hay permiso, para que la interfaz muestre el aviso dentro de la app.
  */
 export async function notify(title: string, body: string): Promise<boolean> {
-  const plugin = await native();
-  if (plugin) {
-    const { display } = await plugin.checkPermissions();
+  const native = await nativePlugin();
+  if (native) {
+    const { display } = await native.plugin.checkPermissions();
     if (display !== "granted") return false;
-    await plugin.schedule({ notifications: [{ id: nextId++, title, body }] });
+    await native.plugin.schedule({ notifications: [{ id: nextId++, title, body }] });
     return true;
   }
   if (browserPermission() !== "granted") return false;

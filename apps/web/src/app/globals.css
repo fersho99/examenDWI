@@ -32,14 +32,20 @@ body {
 }
 
 /* Respeta la muesca y la barra de gestos cuando la página corre dentro de la app */
+/* Capacitor 8 publica los insets en --safe-area-inset-*; el navegador, en env(). */
+:root {
+  --inset-top: max(env(safe-area-inset-top), var(--safe-area-inset-top, 0px));
+  --inset-bottom: max(env(safe-area-inset-bottom), var(--safe-area-inset-bottom, 0px));
+}
+
 .safe-area {
-  padding-top: max(2rem, env(safe-area-inset-top));
-  padding-bottom: max(3rem, env(safe-area-inset-bottom));
+  padding-top: calc(1.5rem + var(--inset-top));
+  padding-bottom: calc(3rem + var(--inset-bottom));
 }
 
 /* Deja libre el espacio de la barra inferior de la app */
 .has-nav .safe-area {
-  padding-bottom: calc(6rem + env(safe-area-inset-bottom));
+  padding-bottom: calc(6rem + var(--inset-bottom));
 }
 
 :focus-visible {

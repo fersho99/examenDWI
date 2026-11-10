@@ -38,7 +38,7 @@ function Nav({ pathname }: { pathname: string | null }) {
     <nav
       aria-label="Secciones"
       className="fixed inset-x-0 bottom-0 z-30 bg-ink/95 backdrop-blur"
-      style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+      style={{ paddingBottom: "var(--inset-bottom)" }}
     >
       <ul className="mx-auto grid max-w-xl grid-cols-4">
         {ITEMS.map((item) => {
