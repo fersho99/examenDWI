@@ -1,155 +1,134 @@
 "use client";
 
-import { useActionState, useEffect, useRef, useState } from "react";
-import { login, type LoginState } from "./actions";
-import { ArrowRightIcon, EyeIcon, EyeOffIcon } from "@/components/icons";
-
-const INITIAL_STATE: LoginState = { error: null, attempt: 0 };
+import { useRouter } from "next/navigation";
+import { useState, type FormEvent } from "react";
+import { EyeIcon, EyeOffIcon } from "@/components/icons";
+import { authClient } from "@/lib/auth-client";
 
 const FIELD =
-  "mt-2 w-full rounded-xl border bg-ink px-4 py-3 text-base text-cream placeholder:text-dust transition-colors duration-150 focus:border-btc focus:outline-none";
+  "mt-2 w-full min-h-12 rounded-xl border border-line bg-panel px-4 text-base text-cream placeholder:text-dust transition-colors duration-150 focus:border-btc focus:outline-none";
 
-export function LoginForm({
-  demoEmail,
-  demoPassword,
-}: {
-  demoEmail: string;
-  demoPassword: string;
-}) {
-  const [state, action, pending] = useActionState(login, INITIAL_STATE);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+const MESSAGES: Record<string, string> = {
+  INVALID_EMAIL_OR_PASSWORD: "El correo o la contraseña no coinciden.",
+  SIGNUP_CLOSED: "El registro está cerrado: esta app ya tiene dueño. Entra con tu cuenta.",
+  USER_ALREADY_EXISTS: "Ese correo ya tiene cuenta. Entra con ella.",
+  USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL: "Ese correo ya tiene cuenta. Entra con ella.",
+  PASSWORD_TOO_SHORT: "La contraseña necesita al menos 10 caracteres.",
+};
+
+function describe(error: { code?: string | undefined; status?: number | undefined }) {
+  if (error.code && MESSAGES[error.code]) return MESSAGES[error.code];
+  if (error.status === 429) return "Demasiados intentos. Espera un minuto y vuelve a probar.";
+  return "No pudimos completar el acceso. Revisa tu conexión e intenta de nuevo.";
+}
+
+/** Solo rutas internas: evita redirigir a otro sitio con ?next=. */
+function safeNext(next: string | null) {
+  return next && next.startsWith("/") && !next.startsWith("//") ? next : "/app";
+}
+
+export function LoginForm({ next }: { next: string | null }) {
+  const router = useRouter();
+  const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [showPassword, setShowPassword] = useState(false);
-  const card = useRef<HTMLDivElement>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [pending, setPending] = useState(false);
 
-  useEffect(() => {
-    if (state.attempt === 0 || !card.current) return;
-    if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  async function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    const email = String(form.get("email") ?? "").trim().toLowerCase();
+    const password = String(form.get("password") ?? "");
+    const name = String(form.get("name") ?? "").trim();
 
-    card.current.animate(
-      [
-        { transform: "translateX(0)" },
-        { transform: "translateX(-8px)" },
-        { transform: "translateX(6px)" },
-        { transform: "translateX(-3px)" },
-        { transform: "translateX(0)" },
-      ],
-      { duration: 280, easing: "ease-out" },
-    );
-  }, [state.attempt]);
+    setPending(true);
+    setError(null);
+    const result =
+      mode === "signin"
+        ? await authClient.signIn.email({ email, password })
+        : await authClient.signUp.email({ email, password, name: name || email.split("@")[0]! });
+    setPending(false);
 
-  const hasError = Boolean(state.error);
-  const border = hasError ? "border-down" : "border-line";
+    if (result.error) {
+      setError(describe(result.error));
+      return;
+    }
+    router.replace(safeNext(next));
+    router.refresh();
+  }
+
+  const signup = mode === "signup";
 
   return (
-    <div
-      ref={card}
-      className="rise mt-8 rounded-3xl border border-line bg-panel p-6 sm:p-8"
-      style={{ "--delay": "70ms" } as React.CSSProperties}
-    >
+    <div className="rise mt-10" style={{ "--delay": "70ms" } as React.CSSProperties}>
       <h1 className="font-display text-3xl font-semibold tracking-tight">
-        Entra al panel
+        {signup ? "Crea tu cuenta" : "Entra a Bloque 21"}
       </h1>
       <p className="mt-2 text-sand">
-        Este acceso es una simulación y no se conecta a ningún servidor.
+        {signup
+          ? "La primera cuenta queda como dueña de la app; después el registro se cierra."
+          : "Tu sesión dura 30 días en este dispositivo."}
       </p>
 
-      <form action={action} className="mt-6 space-y-4">
+      <form onSubmit={submit} className="mt-8 space-y-5" noValidate>
+        {signup && (
+          <label className="block text-sm font-medium">
+            Nombre
+            <input name="name" autoComplete="name" className={FIELD} placeholder="Cómo te llamamos" />
+          </label>
+        )}
         <label className="block text-sm font-medium">
           Correo
-          <input
-            name="email"
-            type="email"
-            autoComplete="username"
-            required
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-            aria-invalid={hasError}
-            className={`${FIELD} ${border}`}
-          />
+          <input name="email" type="email" required autoComplete="email" inputMode="email" className={FIELD} />
         </label>
-
         <label className="block text-sm font-medium">
           Contraseña
           <span className="relative block">
             <input
               name="password"
               type={showPassword ? "text" : "password"}
-              autoComplete="current-password"
               required
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              aria-invalid={hasError}
-              className={`${FIELD} ${border} pr-12`}
+              minLength={10}
+              autoComplete={signup ? "new-password" : "current-password"}
+              className={`${FIELD} pr-14`}
             />
             <button
               type="button"
-              onClick={() => setShowPassword((shown) => !shown)}
+              onClick={() => setShowPassword((value) => !value)}
               aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
-              aria-pressed={showPassword}
-              className="press absolute top-2 right-1 flex size-11 items-center justify-center rounded-lg text-dust hover:text-cream"
+              className="absolute top-2 right-1 flex size-12 items-center justify-center rounded-full text-sand hover:text-cream"
             >
-              {showPassword ? (
-                <EyeOffIcon className="size-5" />
-              ) : (
-                <EyeIcon className="size-5" />
-              )}
+              {showPassword ? <EyeOffIcon className="size-5" /> : <EyeIcon className="size-5" />}
             </button>
           </span>
+          {signup && <span className="mt-1 block text-sm text-dust">Mínimo 10 caracteres.</span>}
         </label>
 
-        <p
-          role="alert"
-          className={`text-sm text-down ${state.error ? "rise" : "sr-only"}`}
-        >
-          {state.error}
-        </p>
+        {error && (
+          <p role="alert" className="text-sm text-down">
+            {error}
+          </p>
+        )}
 
         <button
           type="submit"
           disabled={pending}
-          className="press flex w-full items-center justify-center gap-2 rounded-xl bg-btc px-5 py-3 font-semibold text-ink hover:bg-[#ffa63d] disabled:cursor-wait disabled:opacity-80"
+          className="press min-h-12 w-full rounded-full bg-btc px-6 font-semibold text-ink hover:bg-[#ffa63d] disabled:opacity-60"
         >
-          {pending ? (
-            <>
-              <span
-                aria-hidden
-                className="spinner size-4 rounded-full border-2 border-ink/30 border-t-ink"
-              />
-              Verificando…
-            </>
-          ) : (
-            <>
-              Iniciar sesión
-              <ArrowRightIcon className="size-4" />
-            </>
-          )}
+          {pending ? "Un momento…" : signup ? "Crear cuenta" : "Entrar"}
         </button>
       </form>
 
-      <div className="mt-6 rounded-xl border border-line p-4 text-sm">
-        <p className="font-medium">Credenciales de demostración</p>
-        <dl className="mt-2 space-y-1 font-mono text-xs text-sand">
-          <div className="flex flex-wrap gap-2">
-            <dt className="text-dust">correo:</dt>
-            <dd className="break-all">{demoEmail}</dd>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <dt className="text-dust">contraseña:</dt>
-            <dd>{demoPassword}</dd>
-          </div>
-        </dl>
-        <button
-          type="button"
-          onClick={() => {
-            setEmail(demoEmail);
-            setPassword(demoPassword);
-          }}
-          className="press mt-3 rounded-lg border border-line px-3 py-2 font-medium text-btc hover:border-btc"
-        >
-          Autocompletar
-        </button>
-      </div>
+      <button
+        type="button"
+        onClick={() => {
+          setMode(signup ? "signin" : "signup");
+          setError(null);
+        }}
+        className="mt-4 min-h-12 text-sm text-sand underline-offset-4 hover:text-cream hover:underline"
+      >
+        {signup ? "Ya tengo cuenta" : "Primera vez aquí: crear la cuenta"}
+      </button>
     </div>
   );
 }

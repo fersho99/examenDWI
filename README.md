@@ -17,7 +17,7 @@ Precios de criptomonedas en la web, una app Android y una app para Galaxy Watch 
    npm install
    ```
 
-2. Copia `.env.example` como `.env.local` y llena `DATABASE_URL`, `DATABASE_URL_UNPOOLED` y `CRON_SECRET`.
+2. Copia `.env.example` como `.env.local` y llena `DATABASE_URL`, `DATABASE_URL_UNPOOLED`, `CRON_SECRET` y `BETTER_AUTH_SECRET`. Sin base de datos la app funciona en modo abierto con precios en vivo de Binance.
 3. Crea las tablas, registra las monedas y trae las primeras velas:
 
    ```bash
@@ -58,6 +58,6 @@ Corre tipos, lint, pruebas (incluida una de integración con Postgres en memoria
 - [CoinGecko](https://docs.coingecko.com/docs/keyless-public-api): capitalización, suministro, ATH y tipos de cambio en el sitio actual.
 - [Alternative.me](https://alternative.me/crypto/fear-and-greed-index/): índice de miedo y codicia.
 
-## Sitio anterior
+## Acceso
 
-`/`, `/login` y `/dashboard` siguen siendo el sitio de Bitcoin con login **simulado** (usuario `demo@bloque21.test`, contraseña `satoshi21`). Se reemplazan en los hitos 2 a 4 del plan.
+`/` sigue siendo la portada del sitio anterior. `/login` usa Better Auth con contraseñas en Argon2id: la primera cuenta que se registra es la dueña y después el registro se cierra. `/dashboard` redirige a `/app`.

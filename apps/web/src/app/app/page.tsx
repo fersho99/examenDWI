@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from "next";
 import { connection } from "next/server";
 import { Suspense } from "react";
 import { loadPrices } from "@/server/market/price-service";
+import { requireViewer } from "@/server/session";
+import { AccountBar } from "./account-bar";
 import { LivePrices } from "./live-prices";
 
 export const metadata: Metadata = { title: "Precios" };
@@ -24,11 +26,17 @@ export default function AppHome() {
 
 async function InitialPrices() {
   await connection();
+  const viewer = await requireViewer("/app");
   const { prices } = await loadPrices().catch((error: unknown) => {
     console.error("app: no se pudieron leer los precios", error);
     return { prices: [] };
   });
-  return <LivePrices initial={prices} />;
+  return (
+    <>
+      <AccountBar viewer={viewer} />
+      <LivePrices initial={prices} />
+    </>
+  );
 }
 
 function PricesSkeleton() {

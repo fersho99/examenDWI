@@ -18,6 +18,8 @@
   "dependencies": {
     "@bloque21/shared": "*",
     "@neondatabase/serverless": "^1.2.0",
+    "@node-rs/argon2": "^2.2.2",
+    "better-auth": "^1.7.18",
     "drizzle-orm": "^0.45.4",
     "next": "16.4.5",
     "react": "19.3.0",

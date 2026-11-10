@@ -6,6 +6,7 @@ import { connection } from "next/server";
 import { Suspense } from "react";
 import { loadChart } from "@/server/market/chart-service";
 import { loadPrices } from "@/server/market/price-service";
+import { requireViewer } from "@/server/session";
 import { CoinDetail } from "./coin-detail";
 
 const DEFAULT_DAYS = "7";
@@ -37,6 +38,7 @@ async function Detail({ params }: { params: PageProps<"/app/[coinId]">["params"]
   const coin = INITIAL_COINS.find((item) => item.id === coinId);
   if (!coin) notFound();
   await connection();
+  await requireViewer(`/app/${coin.id}`);
 
   const [prices, chart] = await Promise.all([
     loadPrices([coin.id]).catch(() => ({ prices: [] })),
