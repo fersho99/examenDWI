@@ -1,7 +1,6 @@
 package mx.bloque21.app
 
 import java.text.NumberFormat
-import java.time.Duration
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -25,13 +24,34 @@ fun priceDigits(value: Double): Int {
     }
 }
 
-fun formatPriceUsd(value: Double): String {
-    val digits = priceDigits(value)
-    val number = NumberFormat.getNumberInstance(mexico).apply {
+fun formatNumber(value: Double, digits: Int = priceDigits(value)): String =
+    NumberFormat.getNumberInstance(mexico).apply {
         minimumFractionDigits = digits
         maximumFractionDigits = digits
+    }.format(value)
+
+fun formatPriceUsd(value: Double): String = "$" + formatNumber(value)
+
+/** En MXN si hay tipo de cambio; si no, se queda en USD para no inventar una conversión. */
+fun displayAmount(usd: Double, currency: Currency, usdMxn: Double?): Pair<Double, Currency> =
+    if (currency == Currency.MXN && usdMxn != null) usd * usdMxn to Currency.MXN else usd to Currency.USD
+
+fun formatMoney(usd: Double, currency: Currency, usdMxn: Double?): String {
+    val (amount, _) = displayAmount(usd, currency, usdMxn)
+    // La moneda activa siempre se ve en la pantalla, así que aquí basta el símbolo.
+    return "$" + formatNumber(amount)
+}
+
+/** Para la carátula, que solo admite unos 7 caracteres: 1.36M, 72.9K, 0.0721. */
+fun formatCompact(value: Double): String {
+    val magnitude = abs(value)
+    return when {
+        magnitude >= 1_000_000 -> formatNumber(value / 1_000_000, 2) + "M"
+        magnitude >= 10_000 -> formatNumber(value / 1_000, 1) + "K"
+        magnitude >= 1_000 -> formatNumber(value, 0)
+        magnitude >= 1 -> formatNumber(value, 2)
+        else -> formatNumber(value, 4)
     }
-    return "$" + number.format(value)
 }
 
 fun formatSignedPercent(value: Double): String {
@@ -43,10 +63,9 @@ fun formatSignedPercent(value: Double): String {
     return sign + String.format(Locale.US, "%.2f%%", abs(value))
 }
 
-/** Hora real del dato, contada desde el reloj del dispositivo. */
-fun freshness(asOf: String, stale: Boolean, now: Instant = Instant.now()): String {
-    val at = Instant.parse(asOf)
-    if (stale) return "Último dato ${clock.format(at)}"
-    val minutes = (Duration.between(at, now).toSeconds() / 60.0).roundToLong().coerceAtLeast(0)
+/** Antigüedad real del dato, contada desde el reloj del dispositivo. */
+fun freshness(asOf: Long, stale: Boolean, now: Long = System.currentTimeMillis()): String {
+    if (stale) return "Último dato ${clock.format(Instant.ofEpochMilli(asOf))}"
+    val minutes = ((now - asOf) / 60_000.0).roundToLong().coerceAtLeast(0)
     return if (minutes < 1) "Hace un momento" else "Hace $minutes min"
 }

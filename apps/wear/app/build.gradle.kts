@@ -8,11 +8,6 @@ plugins {
 // Sube solo en cada compilación: minutos desde el 1 de enero de 2026 (igual que el teléfono).
 val buildStamp = (System.currentTimeMillis() / 60_000L - 29_453_760L).toInt()
 
-// URL de la API: -Pbloque21.apiBaseUrl=... (lo pasa scripts/android.mjs) o la variable BLOQUE21_URL.
-// Sin ninguna, el reloj usa el servidor local a través de `adb reverse tcp:3000 tcp:3000`.
-val apiBaseUrl: String = (findProperty("bloque21.apiBaseUrl") as String?)
-    ?: System.getenv("BLOQUE21_URL")
-    ?: "http://localhost:3000"
 
 android {
     namespace = "mx.bloque21.app"
@@ -25,7 +20,6 @@ android {
         targetSdk = 36
         versionCode = buildStamp
         versionName = "0.1.0"
-        buildConfigField("String", "API_BASE_URL", "\"${apiBaseUrl.trimEnd('/')}\"")
     }
 
     buildTypes {
@@ -36,7 +30,6 @@ android {
 
     buildFeatures {
         compose = true
-        buildConfig = true
     }
 
     compileOptions {
@@ -66,6 +59,9 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-guava:1.11.0")
     implementation("androidx.wear.tiles:tiles:1.5.0")
     implementation("androidx.wear.protolayout:protolayout:1.3.0")
+    implementation("androidx.wear.compose:compose-navigation:1.5.6")
+    implementation("androidx.wear.watchface:watchface-complications-data-source-ktx:1.2.1")
+    implementation("androidx.work:work-runtime-ktx:2.10.5")
 
     testImplementation("junit:junit:4.13.2")
 }

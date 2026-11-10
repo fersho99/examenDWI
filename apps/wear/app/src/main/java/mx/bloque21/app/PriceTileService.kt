@@ -29,20 +29,17 @@ private const val SAND = 0xFFBDB3A2.toInt()
 private const val UP = 0xFF4FD8A5.toInt()
 private const val DOWN = 0xFFFF7A6B.toInt()
 
-/** Tile de precio de la moneda principal: precio grande, variación y antigüedad real del dato. */
+/** Tile de la moneda principal: precio grande, variación, rango del día y antigüedad del dato. */
 class PriceTileService : TileService() {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
 
     override fun onTileRequest(requestParams: RequestBuilders.TileRequest): ListenableFuture<TileBuilders.Tile> =
         scope.future {
-            val fresh = runCatching { PricesApi.fetch().data.prices.firstOrNull() }.getOrNull()
-            fresh?.let { LastPrice.save(this@PriceTileService, it) }
-            val price = fresh ?: LastPrice.load(this@PriceTileService)
-
+            val (snapshot, offline) = Market.refreshOrCached(this@PriceTileService)
             TileBuilders.Tile.Builder()
                 .setResourcesVersion(RESOURCES_VERSION)
                 .setFreshnessIntervalMillis(FRESHNESS_MS)
-                .setTileTimeline(TimelineBuilders.Timeline.fromLayoutElement(layout(price, offline = fresh == null)))
+                .setTileTimeline(TimelineBuilders.Timeline.fromLayoutElement(layout(snapshot, offline)))
                 .build()
         }
 
@@ -56,22 +53,31 @@ class PriceTileService : TileService() {
         scope.cancel()
     }
 
-    private fun layout(price: Price?, offline: Boolean): LayoutElementBuilders.LayoutElement {
+    private fun layout(snapshot: Snapshot?, offline: Boolean): LayoutElementBuilders.LayoutElement {
+        val coin = Settings.primaryCoin(this)
+        val currency = Settings.currency(this)
+        val quote = snapshot?.quote(coin.id)
         val column = LayoutElementBuilders.Column.Builder()
             .setHorizontalAlignment(LayoutElementBuilders.HORIZONTAL_ALIGN_CENTER)
 
-        if (price == null) {
+        if (snapshot == null || quote == null) {
             column.addContent(text("Abre Bloque 21 para cargar el precio", 14f, SAND))
         } else {
-            val change = price.change24hPct
-            column.addContent(text(price.name, 14f, SAND))
-            column.addContent(text(formatPriceUsd(price.priceUsd), 30f, CREAM, bold = true))
-            if (change != null) {
-                column.addContent(text(formatSignedPercent(change), 15f, if (change >= 0) UP else DOWN))
-            }
-            column.addContent(spacer(6f))
-            val age = freshness(price.asOf, price.stale || offline)
-            column.addContent(text(if (offline) "Sin red. $age" else age, 12f, if (offline || price.stale) DOWN else SAND))
+            val shown = displayAmount(quote.priceUsd, currency, snapshot.usdMxn).second
+            column.addContent(text("${coin.name} en ${shown.name}", 13f, SAND))
+            column.addContent(text(formatMoney(quote.priceUsd, currency, snapshot.usdMxn), 26f, CREAM, bold = true))
+            column.addContent(text(formatSignedPercent(quote.change24hPct), 15f, if (quote.change24hPct >= 0) UP else DOWN))
+            column.addContent(
+                text(
+                    "${formatMoney(quote.lowUsd, currency, snapshot.usdMxn)} a ${formatMoney(quote.highUsd, currency, snapshot.usdMxn)}",
+                    11f,
+                    SAND,
+                ),
+            )
+            column.addContent(spacer(4f))
+            val stale = quote.isStale() || offline
+            val age = freshness(quote.asOf, stale)
+            column.addContent(text(if (offline) "Sin red. $age" else age, 11f, if (stale) DOWN else SAND))
         }
 
         return LayoutElementBuilders.Box.Builder()
