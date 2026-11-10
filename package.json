@@ -1,26 +1,31 @@
 {
-  "name": "bloque-21",
-  "version": "0.1.0",
+  "name": "bloque21",
   "private": true,
+  "type": "module",
+  "workspaces": [
+    "apps/web",
+    "apps/android",
+    "packages/shared"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "eslint"
-  },
-  "dependencies": {
-    "next": "16.4.5",
-    "react": "19.3.0",
-    "react-dom": "19.3.0"
-  },
-  "devDependencies": {
-    "@tailwindcss/turbopack": "^4",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "eslint": "^9",
-    "eslint-config-next": "16.4.5",
-    "tailwindcss": "^4",
-    "typescript": "^5"
+    "dev": "npm run dev -w @bloque21/web",
+    "build": "npm run build -w @bloque21/web",
+    "lint": "npm run lint -w @bloque21/web",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "check": "npm run typecheck && npm run lint && npm run test && npm run build",
+    "db:generate": "npm run db:generate -w @bloque21/web",
+    "db:migrate": "npm run db:migrate -w @bloque21/web",
+    "db:seed": "npm run db:seed -w @bloque21/web",
+    "ingest": "npm run ingest -w @bloque21/web",
+    "android:debug": "node scripts/android.mjs phone build",
+    "android:install": "node scripts/android.mjs phone install",
+    "wear:debug": "node scripts/android.mjs watch build",
+    "wear:install": "node scripts/android.mjs watch install",
+    "wear:connect": "node scripts/android.mjs watch connect",
+    "devices": "adb devices -l"
   }
 }

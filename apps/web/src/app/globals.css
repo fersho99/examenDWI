@@ -30,6 +30,12 @@ body {
   color: var(--color-cream);
 }
 
+/* Respeta la muesca y la barra de gestos cuando la página corre dentro de la app */
+.safe-area {
+  padding-top: max(2rem, env(safe-area-inset-top));
+  padding-bottom: max(3rem, env(safe-area-inset-bottom));
+}
+
 :focus-visible {
   outline: 2px solid var(--color-btc);
   outline-offset: 3px;

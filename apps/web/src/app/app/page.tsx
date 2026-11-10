@@ -1,0 +1,53 @@
+import type { Metadata, Viewport } from "next";
+import { connection } from "next/server";
+import { Suspense } from "react";
+import { getDb } from "@/server/db/client";
+import { getLatestPrices } from "@/server/market/prices";
+import { LivePrices } from "./live-prices";
+
+export const metadata: Metadata = { title: "Precios" };
+
+export const viewport: Viewport = {
+  themeColor: "#14110d",
+  viewportFit: "cover",
+};
+
+/** Pantalla que carga la app de Android. Por ahora muestra precios reales leídos de Neon. */
+export default function AppHome() {
+  return (
+    <main className="safe-area mx-auto w-full max-w-xl flex-1 px-4">
+      <Suspense fallback={<PricesSkeleton />}>
+        <InitialPrices />
+      </Suspense>
+    </main>
+  );
+}
+
+async function InitialPrices() {
+  await connection();
+  const prices = await getLatestPrices(getDb()).catch((error: unknown) => {
+    console.error("app: no se pudieron leer los precios", error);
+    return [];
+  });
+  return <LivePrices initial={prices} />;
+}
+
+function PricesSkeleton() {
+  return (
+    <div aria-hidden className="space-y-10">
+      <div className="space-y-3">
+        <div className="skeleton h-5 w-24" />
+        <div className="skeleton h-14 w-64" />
+        <div className="skeleton h-5 w-40" />
+      </div>
+      <div className="space-y-5">
+        {Array.from({ length: 6 }, (_, index) => (
+          <div key={index} className="flex items-center justify-between">
+            <div className="skeleton h-5 w-28" />
+            <div className="skeleton h-5 w-24" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
