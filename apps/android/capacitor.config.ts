@@ -7,33 +7,28 @@ const envFile = join(__dirname, "../../.env.local");
 if (existsSync(envFile)) process.loadEnvFile(envFile);
 
 /**
- * La app carga la web desplegada (decisión 1 del plan).
- * dev:  http://localhost:3000/app, que llega al teléfono con `adb reverse tcp:3000 tcp:3000`.
- * prod: BLOQUE21_URL + /app, por ejemplo https://bloque21.vercel.app/app.
+ * Por defecto la APK es independiente: lleva dentro las pantallas (export estático de
+ * apps/web con BUILD_TARGET=mobile) y lee los precios de Binance desde el teléfono.
+ * Con BLOQUE21_ENV=dev carga el servidor local de tu PC por `adb reverse`, para desarrollar
+ * con recarga en vivo.
  */
-const mode = process.env.BLOQUE21_ENV === "dev" ? "dev" : "prod";
-const origin = mode === "dev" ? "http://localhost:3000" : process.env.BLOQUE21_URL?.replace(/\/+$/, "");
-
-if (!origin) {
-  throw new Error("Falta BLOQUE21_URL en .env.local (o usa BLOQUE21_ENV=dev para el servidor local).");
-}
-if (mode === "prod" && !origin.startsWith("https://")) {
-  throw new Error("BLOQUE21_URL debe usar https en modo prod.");
-}
-const url = `${origin}/app`;
+const dev = process.env.BLOQUE21_ENV === "dev";
 
 const config: CapacitorConfig = {
   appId: "mx.bloque21.app",
   appName: "Bloque 21",
-  webDir: "www",
+  webDir: dev ? "www" : "../web/.next-mobile",
   backgroundColor: "#14110d",
-  server: {
-    url,
-    // Texto plano solo para el servidor local de desarrollo.
-    cleartext: mode === "dev",
-    // Página local cuando no se puede cargar el servidor; no tiene acceso a plugins.
-    errorPath: "offline.html",
-  },
+  ...(dev
+    ? {
+        server: {
+          url: "http://localhost:3000/app",
+          // Texto plano solo para el servidor local de desarrollo.
+          cleartext: true,
+          errorPath: "offline.html",
+        },
+      }
+    : {}),
   android: {
     allowMixedContent: false,
   },

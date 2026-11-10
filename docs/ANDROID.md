@@ -8,7 +8,7 @@ Solo APK de depuración, instaladas con `adb install -r` (conserva los datos al 
 | `applicationId` | `mx.bloque21.app` | `mx.bloque21.app` (debe ser idéntico para vincularlos) |
 | `versionName` | `0.1.0` | `0.1.0` |
 | `versionCode` | Minutos desde el 1 de enero de 2026: sube solo en cada compilación | Igual |
-| Qué contiene | El envoltorio nativo, la página local sin conexión y la URL del servidor. Cambiar la web **no** requiere reinstalar | La app completa. Lee Binance directo por su propia conexión: no necesita la PC ni servidor |
+| Qué contiene | Las pantallas empaquetadas dentro de la APK (export estático de `apps/web`). Lee Binance directo desde el teléfono: no necesita la PC ni servidor. Cambiar las pantallas requiere reinstalar | La app completa. Lee Binance directo por su propia conexión: no necesita la PC ni servidor |
 
 ## Lo que necesitas en Windows
 
@@ -23,8 +23,8 @@ Revisado en esta PC el 10 de noviembre de 2026:
 ## Configuración, una vez
 
 1. Copia `.env.example` como `.env.local` en la raíz y llena los valores.
-2. Para usar el servidor desplegado, deja `BLOQUE21_ENV=prod` y pon tu dominio en `BLOQUE21_URL`.
-3. Para probar contra tu PC, usa `BLOQUE21_ENV=dev` y deja corriendo `npm run dev`: los dispositivos llegan a `localhost:3000` mediante `adb reverse`, que los scripts activan solos.
+2. Deja `BLOQUE21_ENV=app` (por defecto): la APK del teléfono lleva sus pantallas dentro y no depende de la PC.
+3. Para desarrollar con recarga en vivo, usa `BLOQUE21_ENV=dev` y deja corriendo `npm run dev`: el teléfono carga tu PC en `localhost:3000` mediante `adb reverse`, que el script activa solo.
 
 `BLOQUE21_ENV` se lee **al compilar**. Si cambias de modo, vuelve a instalar.
 
@@ -91,7 +91,7 @@ Si el nombre de algún menú no coincide en tu versión de One UI Watch, avísam
 
 | Comando | Qué hace |
 |---|---|
-| `npm run android:debug` | `cap sync` y `assembleDebug` del teléfono |
+| `npm run android:debug` | Export estático de las pantallas, `cap sync` y `assembleDebug` del teléfono |
 | `npm run android:install` | Lo anterior y `adb install -r`; en dev también `adb reverse` |
 | `npm run wear:connect` | `adb connect` con `ADB_WATCH` |
 | `npm run wear:debug` | `assembleDebug` del reloj con la URL de la API |
@@ -108,7 +108,7 @@ Las APK quedan en:
 | Síntoma | Causa y solución |
 |---|---|
 | `INSTALL_FAILED_UPDATE_INCOMPATIBLE` | La APK instalada se firmó con otro keystore (otra PC). Desinstala con `adb uninstall mx.bloque21.app` e instala de nuevo. Compila siempre teléfono y reloj en la misma PC para que coincidan las firmas |
-| La app del teléfono muestra "No pudimos abrir Bloque 21" | No llega al servidor. En dev: `npm run dev` corriendo y `adb reverse tcp:3000 tcp:3000`. En prod: revisa `BLOQUE21_URL` |
+| La app del teléfono muestra "No pudimos abrir Bloque 21" | Solo pasa en modo dev: falta `npm run dev` o `adb reverse tcp:3000 tcp:3000` |
 | El reloj dice "Sin conexión" | El reloj no tiene red, o en dev falta `adb reverse` hacia el reloj |
 | `more than one device/emulator` | Define `ADB_PHONE` y `ADB_WATCH` en `.env.local` |
 | Gradle falla con "Unsupported class file major version" | Se usó un JDK que no es 21. Define `BLOQUE21_JAVA_HOME` |

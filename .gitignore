@@ -45,3 +45,6 @@ apps/wear/app/build/
 *.pem
 npm-debug.log*
 .pnpm-debug.log*
+
+# build estático de la APK
+.next-mobile/

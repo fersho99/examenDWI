@@ -11,6 +11,8 @@ export function LivePrices({ initial }: { initial: Price[] }) {
   const prices = market.prices.length > 0 ? market.prices : initial;
   const primary = prices.find((price) => price.coinId === PRIMARY_COIN_ID) ?? prices[0];
 
+  if (!primary && !market.loaded) return <PricesSkeleton />;
+
   if (!primary) {
     return (
       <section className="rise space-y-3">
@@ -83,6 +85,27 @@ export function LivePrices({ initial }: { initial: Price[] }) {
           </ul>
         </section>
       )}
+    </div>
+  );
+}
+
+/** Esqueleto con la forma real de la pantalla mientras llega el primer precio. */
+export function PricesSkeleton() {
+  return (
+    <div aria-hidden className="space-y-10">
+      <div className="space-y-3">
+        <div className="skeleton h-5 w-24" />
+        <div className="skeleton h-14 w-64" />
+        <div className="skeleton h-5 w-40" />
+      </div>
+      <div className="space-y-5">
+        {Array.from({ length: 6 }, (_, index) => (
+          <div key={index} className="flex items-center justify-between">
+            <div className="skeleton h-5 w-28" />
+            <div className="skeleton h-5 w-24" />
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

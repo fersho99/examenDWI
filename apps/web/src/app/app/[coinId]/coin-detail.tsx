@@ -1,21 +1,13 @@
 "use client";
 
-import {
-  ChartResponseSchema,
-  PricesResponseSchema,
-  formatPriceUsd,
-  formatSignedPercent,
-  type ChartDays,
-  type Price,
-} from "@bloque21/shared";
+import { formatPriceUsd, formatSignedPercent, type ChartDays, type Price } from "@bloque21/shared";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { PriceChart } from "@/components/price-chart";
 import { RangeControl } from "@/components/range-control";
+import { fetchChart } from "@/lib/market-data";
 import { CHART_RANGES, type ChartPoint } from "@/lib/types";
 import { Freshness } from "../freshness";
 import { CurrencySwitch, useMarket } from "../market-context";
-
-const REFRESH_MS = 30_000;
 
 interface Coin {
   id: string;
@@ -36,35 +28,33 @@ export function CoinDetail({
   initialPoints: ChartPoint[];
 }) {
   const market = useMarket();
-  const [price, setPrice] = useState(initialPrice);
+  // El precio sigue al ciclo compartido de 30 s; mientras llega, el del servidor (si lo hay).
+  const price = market.pricesById.get(coin.id) ?? initialPrice;
   const [selected, setSelected] = useState<ChartDays>(initialDays);
   const [shown, setShown] = useState({ days: initialDays, points: initialPoints });
-  const [busy, setBusy] = useState(false);
+  const [busy, setBusy] = useState(initialPoints.length === 0);
   const [chartError, setChartError] = useState(false);
   const cache = useRef(new Map<ChartDays, ChartPoint[]>(initialPoints.length ? [[initialDays, initialPoints]] : []));
   const request = useRef<AbortController | null>(null);
 
+  // Sin historial inicial (la APK no tiene servidor), la primera gráfica se pide al abrir.
   useEffect(() => {
-    let active = true;
-    async function refresh() {
-      if (document.hidden) return;
-      try {
-        const response = await fetch(`/api/v1/prices?ids=${coin.id}`, { cache: "no-store" });
-        if (!response.ok) return;
-        const body = PricesResponseSchema.parse(await response.json());
-        if (active && body.data.prices[0]) setPrice(body.data.prices[0]);
-      } catch {
-        // Se conserva el último precio; Freshness indica su antigüedad.
-      }
-    }
-    const timer = setInterval(refresh, REFRESH_MS);
-    document.addEventListener("visibilitychange", refresh);
-    return () => {
-      active = false;
-      clearInterval(timer);
-      document.removeEventListener("visibilitychange", refresh);
-    };
-  }, [coin.id]);
+    if (initialPoints.length > 0) return;
+    const controller = new AbortController();
+    request.current = controller;
+    fetchChart(coin.id, initialDays, controller.signal)
+      .then((points) => {
+        cache.current.set(initialDays, points);
+        setShown({ days: initialDays, points });
+      })
+      .catch(() => {
+        if (!controller.signal.aborted) setChartError(true);
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setBusy(false);
+      });
+    return () => controller.abort();
+  }, [coin.id, initialDays, initialPoints.length]);
 
   async function loadRange(days: ChartDays) {
     request.current?.abort();
@@ -82,11 +72,9 @@ export function CoinDetail({
     request.current = controller;
     setBusy(true);
     try {
-      const response = await fetch(`/api/v1/coins/${coin.id}/chart?days=${days}`, { signal: controller.signal });
-      if (!response.ok) throw new Error(String(response.status));
-      const { data } = ChartResponseSchema.parse(await response.json());
-      cache.current.set(days, data.points);
-      setShown({ days, points: data.points });
+      const points = await fetchChart(coin.id, days, controller.signal);
+      cache.current.set(days, points);
+      setShown({ days, points });
     } catch {
       if (controller.signal.aborted) return;
       setChartError(true);

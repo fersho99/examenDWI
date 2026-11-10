@@ -11,7 +11,8 @@ if (existsSync(envFile)) process.loadEnvFile(envFile);
 
 const [target, action] = process.argv.slice(2);
 const isWindows = process.platform === "win32";
-const mode = process.env.BLOQUE21_ENV === "dev" ? "dev" : "prod";
+// app: APK independiente (pantallas dentro, datos de Binance). dev: carga el servidor de tu PC.
+const mode = process.env.BLOQUE21_ENV === "dev" ? "dev" : "app";
 
 const projects = {
   phone: {
@@ -67,17 +68,15 @@ function adb(project, args) {
   run("adb", [...(project.serial ? ["-s", project.serial] : []), ...args]);
 }
 
-function apiOrigin() {
-  if (mode === "dev") return "http://localhost:3000";
-  const url = process.env.BLOQUE21_URL?.replace(/\/+$/, "");
-  if (!url) fail("Falta BLOQUE21_URL en .env.local (o usa BLOQUE21_ENV=dev para el servidor local).");
-  return url;
-}
-
 function build(name) {
   const project = projects[name];
   if (name === "phone") {
-    console.log(`Compilando teléfono en modo ${mode} contra ${apiOrigin()}`);
+    if (mode === "dev") {
+      console.log("Compilando teléfono contra el servidor de tu PC (localhost:3000)");
+    } else {
+      console.log("Compilando teléfono independiente: pantallas dentro de la APK");
+      run("npm", ["run", "build:mobile", "-w", "@bloque21/web"], { cwd: root });
+    }
     run("npx", ["cap", "sync", "android"], { cwd: join(root, "apps/android") });
     gradle(project, ["assembleDebug"]);
   } else {
