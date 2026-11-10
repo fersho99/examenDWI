@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="es-MX">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="dark" />
+    <title>Bloque 21</title>
+    <style>
+      :root {
+        --ink: #14110d;
+        --cream: #f6f0e6;
+        --sand: #bdb3a2;
+        --btc: #f7931a;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        min-height: 100dvh;
+        display: flex;
+        align-items: center;
+        background: var(--ink);
+        color: var(--cream);
+        font: 16px/1.5 system-ui, sans-serif;
+        padding: max(24px, env(safe-area-inset-top)) 24px max(24px, env(safe-area-inset-bottom));
+      }
+      main {
+        max-width: 28rem;
+        margin: 0 auto;
+      }
+      h1 {
+        font-size: 1.75rem;
+        line-height: 1.15;
+        margin: 0 0 12px;
+      }
+      p {
+        color: var(--sand);
+        margin: 0 0 28px;
+      }
+      button {
+        min-height: 48px;
+        padding: 0 24px;
+        border: 0;
+        border-radius: 999px;
+        background: var(--btc);
+        color: var(--ink);
+        font: 600 16px/1 system-ui, sans-serif;
+        transition: transform 140ms cubic-bezier(0.23, 1, 0.32, 1);
+      }
+      button:active {
+        transform: scale(0.97);
+      }
+      @media (prefers-reduced-motion: reduce) {
+        button {
+          transition: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>No pudimos abrir Bloque 21</h1>
+      <p>
+        El teléfono no llegó al servidor. Revisa que tengas internet; cuando vuelva la conexión,
+        toca reintentar y verás los precios con su hora real.
+      </p>
+      <button type="button" onclick="history.back(); setTimeout(() => location.reload(), 300)">
+        Reintentar
+      </button>
+    </main>
+  </body>
+</html>
