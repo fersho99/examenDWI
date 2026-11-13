@@ -1,0 +1,228 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ink: #14110d;
+  --color-panel: #1c1813;
+  --color-ink-3: #26201a;
+  --color-line: #2e271e;
+  --color-cream: #f6f0e6;
+  --color-sand: #bdb3a2;
+  --color-dust: #a89e8d;
+  --color-btc: #f7931a;
+  --color-btc-deep: #dc7708;
+  --color-up: #4fd8a5;
+  --color-down: #ff7a6b;
+  --ease-strong: cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+@theme inline {
+  --font-sans: var(--font-body);
+  --font-display: var(--font-heading);
+  --font-mono: var(--font-code);
+}
+
+html {
+  color-scheme: dark;
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--color-ink);
+  color: var(--color-cream);
+}
+
+/* Respeta la muesca y la barra de gestos cuando la página corre dentro de la app */
+/* Capacitor 8 publica los insets en --safe-area-inset-*; el navegador, en env(). */
+:root {
+  --inset-top: max(env(safe-area-inset-top), var(--safe-area-inset-top, 0px));
+  --inset-bottom: max(env(safe-area-inset-bottom), var(--safe-area-inset-bottom, 0px));
+}
+
+.safe-area {
+  padding-top: calc(1.5rem + var(--inset-top));
+  padding-bottom: calc(3rem + var(--inset-bottom));
+}
+
+/* Deja libre el espacio de la barra inferior de la app */
+.has-nav .safe-area {
+  padding-bottom: calc(6rem + var(--inset-bottom));
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-btc);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* Entrada escalonada: el retraso se define con la variable --delay */
+.rise {
+  animation: rise 640ms var(--ease-strong) both;
+  animation-delay: var(--delay, 0ms);
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+}
+
+/* Aparición ligada al scroll. Sin soporte, el contenido queda visible. */
+@supports (animation-timeline: view()) {
+  .reveal {
+    animation: rise linear both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 35%;
+  }
+
+  .grow-x {
+    transform-origin: left;
+    animation: grow-x linear both;
+    animation-timeline: view();
+    animation-range: entry 10% entry 60%;
+  }
+}
+
+@keyframes grow-x {
+  from {
+    transform: scaleX(0.02);
+  }
+}
+
+/* Cadena de bloques en movimiento continuo */
+.chain-track {
+  animation: chain 70s linear infinite;
+}
+
+@keyframes chain {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.nudge-icon {
+  transition: transform 180ms var(--ease-strong);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .chain:hover .chain-track {
+    animation-play-state: paused;
+  }
+
+  .nudge:hover .nudge-icon {
+    transform: translateX(4px);
+  }
+}
+
+/* Indicador de datos en vivo */
+.live-dot::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  background: currentColor;
+  animation: live 2.2s var(--ease-strong) infinite;
+}
+
+@keyframes live {
+  from {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(3);
+  }
+}
+
+/* El precio cambia de color un instante cuando llega un valor nuevo */
+.price-figure {
+  transition: color 900ms ease;
+}
+
+.price-figure[data-tick="up"] {
+  color: var(--color-up);
+  transition: none;
+}
+
+.price-figure[data-tick="down"] {
+  color: var(--color-down);
+  transition: none;
+}
+
+.press {
+  transition:
+    transform 140ms var(--ease-strong),
+    background-color 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease;
+}
+
+.press:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+/* Trazo de la gráfica al cambiar de rango */
+.chart-wipe {
+  animation: chart-wipe 420ms var(--ease-strong) both;
+}
+
+@keyframes chart-wipe {
+  from {
+    clip-path: inset(-10% 100% -10% 0);
+  }
+  to {
+    clip-path: inset(-10% -2% -10% 0);
+  }
+}
+
+.skeleton {
+  animation: skeleton 1.6s ease-in-out infinite;
+  background: var(--color-panel);
+  border-radius: 8px;
+}
+
+@keyframes skeleton {
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.spinner {
+  animation: spin 700ms linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .rise {
+    animation-name: fade;
+    animation-duration: 200ms;
+  }
+
+  .reveal,
+  .grow-x,
+  .chain-track,
+  .live-dot::after,
+  .chart-wipe {
+    animation: none;
+  }
+
+  .press:active:not(:disabled) {
+    transform: none;
+  }
+}

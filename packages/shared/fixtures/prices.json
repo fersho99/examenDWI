@@ -1,0 +1,37 @@
+{
+  "data": {
+    "prices": [
+      {
+        "coinId": "bitcoin",
+        "symbol": "BTC",
+        "name": "Bitcoin",
+        "priceUsd": 76121.01,
+        "change24hPct": 1.24,
+        "asOf": "2026-11-10T18:15:02.000Z",
+        "source": "binance",
+        "stale": false
+      },
+      {
+        "coinId": "dogecoin",
+        "symbol": "DOGE",
+        "name": "Dogecoin",
+        "priceUsd": 0.07215,
+        "change24hPct": -0.8,
+        "asOf": "2026-11-10T18:15:02.000Z",
+        "source": "binance",
+        "stale": false
+      },
+      {
+        "coinId": "the-open-network",
+        "symbol": "TON",
+        "name": "Toncoin",
+        "priceUsd": 1.6,
+        "change24hPct": null,
+        "asOf": "2026-11-10T17:20:00.000Z",
+        "source": "binance",
+        "stale": true
+      }
+    ]
+  },
+  "meta": { "generatedAt": "2026-11-10T18:16:40.000Z", "servedFrom": "database" }
+}

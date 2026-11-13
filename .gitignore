@@ -1,41 +1,50 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
-# dependencies
-/node_modules
-/.pnp
+# dependencias
+node_modules/
+.pnp
 .pnp.*
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/versions
 
-# testing
-/coverage
+# pruebas
+coverage/
 
 # next.js
-/.next/
-/out/
+.next/
+out/
+build/
+next-env.d.ts
+*.tsbuildinfo
 
-# production
-/build
-
-# misc
-.DS_Store
-*.pem
-
-# debug
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.pnpm-debug.log*
-
-# env files (can opt-in for committing if needed)
+# entorno: solo se sube la plantilla
 .env*
+!.env.example
 
 # vercel
 .vercel
 
-# typescript
-*.tsbuildinfo
-next-env.d.ts
+# android y wear
+.gradle/
+local.properties
+*.apk
+*.aab
+.idea/
+captures/
+.externalNativeBuild/
+.cxx/
+google-services.json
+apps/android/android/app/build/
+apps/android/android/build/
+apps/android/android/capacitor-cordova-android-plugins/
+apps/android/android/app/src/main/assets/public/
+apps/android/android/app/src/main/assets/capacitor.config.json
+apps/android/android/app/src/main/assets/capacitor.plugins.json
+apps/android/android/app/src/main/res/xml/config.xml
+apps/wear/build/
+apps/wear/app/build/
+
+# sistema y depuración
+.DS_Store
+*.pem
+npm-debug.log*
+.pnpm-debug.log*
+
+# build estático de la APK
+.next-mobile/
